@@ -29,17 +29,45 @@ class Node
    def display(indent = 0)
        puts "\s"*indent+"<#{@type} name=\"#{@name}\">"
        @children.each { |c| c.display(indent+1) }
-       puts "\s"*indent+"</#{@type} name=\"#{@name}\">"
+       puts "\s"*indent+"</#{@type}>"
    end
    
 end
 
 class NamespaceNode < Node
     def initialize(name, contents, prefix)
+        puts "+ namespace +"
         super 'namespace',name,prefix
-        contents.scan(NAMESPACE_DECLARATION) do
+        contents.gsub!(NAMESPACE_DECLARATION) do
             @children << NamespaceNode.new($~[:name],$~[:scope],self.complete_name)
+            ''
         end
+        contents.gsub!(CLASS_DECLARATION) do 
+            @children << ClassNode.new($~[:name],$~[:scope],self.complete_name) 
+            ''
+        end
+        contents.gsub!(METHOD_DECL) do
+          @children << MethodNode.new($~[:name],$~[:scope],self.complete_name) 
+          ''
+        end
+    end
+end
+
+class ClassNode < Node
+   def initialize(name, contents, prefix)
+       puts "+ class #{name}+"
+      super 'class', name, prefix
+      contents.gsub!(METHOD_DECL) do
+          @children << MethodNode.new($~[:name],$~[:scope],self.complete_name) 
+          ''
+      end
+   end
+end
+
+class MethodNode < Node
+    def initialize (name,contents,prefix)
+        puts "+ method #{name}+"
+        super 'method', name, prefix
     end
 end
 
@@ -51,6 +79,9 @@ class Parser
    protected
    
    def parse_text text
-      NamespaceNode.new("::",text,'')
+       # first remove comments 
+       text.gsub!(COMMENTS) do |m| '' end
+       # then begin populating the node tree
+       NamespaceNode.new("::",text,'')
    end
 end
