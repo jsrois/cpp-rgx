@@ -13,6 +13,12 @@ class Node
      @prefix+@name
    end 
    
+   def add_child node
+        print '.'
+        $stdout.flush
+        @children << node
+   end
+   
    # idea: return list of candidates ["foo::bar", "cv::bar"] when an element "bar" is searched
    def find element_name
        if @name === name then 
@@ -36,18 +42,17 @@ end
 
 class NamespaceNode < Node
     def initialize(name, contents, prefix)
-        puts "+ namespace +"
         super 'namespace',name,prefix
         contents.gsub!(NAMESPACE_DECLARATION) do
-            @children << NamespaceNode.new($~[:name],$~[:scope],self.complete_name)
+            add_child NamespaceNode.new($~[:name],$~[:scope],self.complete_name)
             ''
         end
         contents.gsub!(CLASS_DECLARATION) do 
-            @children << ClassNode.new($~[:name],$~[:scope],self.complete_name) 
+            add_child  ClassNode.new($~[:name],$~[:scope],self.complete_name) 
             ''
         end
         contents.gsub!(METHOD_DECL) do
-          @children << MethodNode.new($~[:name],$~[:scope],self.complete_name) 
+          add_child  MethodNode.new($~[:name],$~[:scope],self.complete_name) 
           ''
         end
     end
@@ -55,10 +60,9 @@ end
 
 class ClassNode < Node
    def initialize(name, contents, prefix)
-       puts "+ class #{name}+"
       super 'class', name, prefix
       contents.gsub!(METHOD_DECL) do
-          @children << MethodNode.new($~[:name],$~[:scope],self.complete_name) 
+         add_child MethodNode.new($~[:name],$~[:scope],self.complete_name) 
           ''
       end
    end
@@ -66,7 +70,6 @@ end
 
 class MethodNode < Node
     def initialize (name,contents,prefix)
-        puts "+ method #{name}+"
         super 'method', name, prefix
     end
 end

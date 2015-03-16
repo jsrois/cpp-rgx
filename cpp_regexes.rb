@@ -15,27 +15,14 @@ CLASS_DECLARATION = %r{
     \s*;
 }x
 
-METHOD_DECL2 = %r{
-        (?<vn>:{2}?(?:[A-Za-z_0-9~]+|operator[^\s])\g<vn>?){0}    #valid-name
-        (?<s>{((\g<s>|[^{}]*))*}){0}                              #scope
-        (?<ps>\(((\g<ps>|[^\)\(]*))*\)){0}                        #parenthesis scope
-        (?<ts>\<((\g<ts>|[^\<\>]*))*\>){0}                        #template scope
-        (?<cm>template\s*\<ts>|const|static){0}                   #class modifiers
-
-        (?:\g<cm>\s+)* #[optional] modifiers
-        (?:(?<retval>\g<vn>)[\s\*\&]*\s[\s\*\&]*(?<name>\g<vn>)| #retval and funtion name or
-              (?<name>\g<vn>)) # just function name (ctors and dtors)
-        \s*(?:;|\g<ps>\s*(?:const|:[^\{]+)?\s*       # take into account const, initializer lists... (what else?)
-        (?:;|(?<scope>\g<s>)))
-}x
-
 METHOD_DECL = %r{
-        (?<vn>:{2}?(?:[A-Za-z_0-9~]+|operator[^\s])\g<vn>?){0}    #valid-name
+        (?<vn>:{2}?(?:[A-Za-z_0-9~\[\]]+|operator[^\s])\g<vn>?){0}    #valid-name
         (?<s>{((\g<s>|[^{}]*))*}){0}                              #scope
         (?<ps>\(((\g<ps>|[^\)\(]*))*\)){0}                        #parenthesis scope
         (?<ts>\<((\g<ts>|[^\<\>]*))*\>){0}                        #template scope
-        (?<cm>template\s*\<ts>|const|static){0}                   #class modifiers
+        (?<cm>template\s*\<ts>|const|static|inline){0}                   #class modifiers
 
+        (?:static\s+\g<vn>\s+(?<name>\g<vn>)\s*=[^;]*;)|    
         (?:\g<cm>\s+)* #[optional] modifiers
         (?:
            (?<name>\g<vn>)\s*\g<ps>\s*(?:;|(?::[^\{]+)\g<s>) #ctors and dtors
